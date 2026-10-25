@@ -172,6 +172,14 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.secondaryAccentDark, width: 1.5),
         ),
+                errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.destructive, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.destructive, width: 1.5),
+        ),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(

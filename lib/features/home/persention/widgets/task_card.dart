@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/core/app_typography.dart';
-import 'package:to_do_app/data/task_model.dart';
-import 'package:to_do_app/logic/task_cubit/task_cubit.dart';
-import 'package:to_do_app/presentation/task_operations/delete_task.dart';
-import 'package:to_do_app/presentation/task_operations/edit_task.dart';
-import 'package:to_do_app/presentation/home/widgets/small_button.dart';
+import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
+import 'package:to_do_app/features/tasks/persentions/task_operations/delete_task.dart';
+import 'package:to_do_app/features/tasks/persentions/task_operations/edit_task.dart';
+import 'package:to_do_app/features/home/persention/widgets/small_button.dart';
 
 class TaskCard extends StatelessWidget {
   final TaskModel task;
@@ -27,6 +26,9 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final textTheme = Theme.of(context).textTheme;
+
     final isDone = task.status == Status.completed;
     final due = _dueDateTime;
     final isOverdue = !isDone && due != null && due.isBefore(DateTime.now());
@@ -46,7 +48,7 @@ class TaskCard extends StatelessWidget {
           onPressed: () => context.read<TasksCubit>().toggleStatus(task),
           icon: Icon(
             isDone ? Icons.check_circle_rounded : Icons.circle_outlined,
-            color: AppColors.secondaryAccentLight,
+            color: c.secondaryAccent,
           ),
         ),
         title: Text(
@@ -54,12 +56,12 @@ class TaskCard extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: isDone
-              ? AppTypography.lightTextTheme.titleLarge?.copyWith(
+              ? textTheme.titleLarge?.copyWith(
                   decoration: TextDecoration.lineThrough,
-                  decorationColor: AppColors.taskCompletedLight,
-                  color: AppColors.taskCompletedLight,
+                  decorationColor: c.taskCompleted,
+                  color: c.taskCompleted,
                 )
-              : AppTypography.lightTextTheme.titleLarge,
+              : textTheme.titleLarge,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +71,7 @@ class TaskCard extends StatelessWidget {
                 task.description!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.lightTextTheme.bodySmall,
+                style: textTheme.bodySmall,
               ),
             const SizedBox(height: 8),
             Wrap(
@@ -136,9 +138,9 @@ class _InfoChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.secondaryAccentLight),
+        Icon(icon, size: 14, color: context.colors.secondaryAccent),
         const SizedBox(width: 4),
-        Text(text, style: AppTypography.lightTextTheme.bodySmall),
+        Text(text, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -151,6 +153,9 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final bodySmall = Theme.of(context).textTheme.bodySmall;
+
     final label = isDone
         ? 'Completed'
         : isOverdue
@@ -158,15 +163,15 @@ class _StatusBadge extends StatelessWidget {
             : 'Pending';
 
     final background = isOverdue
-        ? AppColors.destructiveBg
-        : AppColors.secondaryAccentLight.withValues(alpha: 0.3);
+        ? c.destructiveBg
+        : c.secondaryAccent.withValues(alpha: 0.3);
 
     final style = isOverdue
-        ? AppTypography.lightTextTheme.bodySmall?.copyWith(
+        ? bodySmall?.copyWith(
             color: AppColors.destructive,
             fontWeight: FontWeight.w600,
           )
-        : AppTypography.lightTextTheme.bodySmall;
+        : bodySmall;
 
     return Container(
       decoration: BoxDecoration(

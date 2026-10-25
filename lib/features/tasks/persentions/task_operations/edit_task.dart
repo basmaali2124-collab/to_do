@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/core/app_typography.dart';
 import 'package:to_do_app/core/validation_helper.dart';
-import 'package:to_do_app/data/task_model.dart';
-import 'package:to_do_app/logic/task_cubit/task_cubit.dart';
-import 'package:to_do_app/presentation/task_operations/delete_task.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/date_time_row.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/field_label.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/form_action_button.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/notification_card.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/task_app_bar.dart';
+import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
+import 'package:to_do_app/features/tasks/persentions/task_operations/delete_task.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/date_time_row.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/field_label.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/form_action_button.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/notification_card.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/responsive.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/task_app_bar.dart';
 
 class EditTask extends StatefulWidget {
   final TaskModel taskModel;
@@ -87,6 +87,8 @@ class _EditTaskState extends State<EditTask> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -102,14 +104,12 @@ class _EditTaskState extends State<EditTask> {
             ),
             child: Form(
               key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Edit Task Details',
-                    style: AppTypography.lightTextTheme.displayLarge,
-                  ),
-                  const SizedBox(height: 16),
+              child: ResponsiveForm(
+                header: Text(
+                  'Edit Task Details',
+                  style: Theme.of(context).textTheme.displayLarge,
+                ),
+                firstColumn: [
                   const FieldLabel(
                     'Task Title',
                     suffix: '*',
@@ -129,10 +129,10 @@ class _EditTaskState extends State<EditTask> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  const FieldLabel(
+                  FieldLabel(
                     'Description',
                     suffix: '(Optional)',
-                    suffixColor: AppColors.textSecondaryLight,
+                    suffixColor: c.textSecondary,
                   ),
                   TextField(
                     controller: _descriptionController,
@@ -143,7 +143,8 @@ class _EditTaskState extends State<EditTask> {
                       hintText: 'Add subtle details, notes, or subtasks....',
                     ),
                   ),
-                  const SizedBox(height: 16),
+                ],
+                secondColumn: [
                   DateTimeRow(
                     date: _selectedDate,
                     time: _selectedTime,
@@ -162,19 +163,19 @@ class _EditTaskState extends State<EditTask> {
                   ),
                   const SizedBox(height: 16),
                   const NotificationHintCard(),
-                  const SizedBox(height: 36),
+                ],
+                actions: [
                   FormActionButton(
                     icon: Icons.check_rounded,
                     label: 'Save Changes',
                     onPressed: _save,
                   ),
-                  const SizedBox(height: 16),
                   FormActionButton(
                     icon: Icons.delete_outline_rounded,
                     label: 'Delete Task',
                     onPressed: _delete,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.backgroundLight,
+                      backgroundColor: c.background,
                       foregroundColor: AppColors.destructive,
                     ),
                   ),

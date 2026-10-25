@@ -1,29 +1,27 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/servicses/notification_service.dart';
-import 'package:to_do_app/data/database_helper.dart';
-import 'package:to_do_app/data/task_model.dart';
-import 'package:to_do_app/logic/task_cubit/task_states.dart';
+import 'package:to_do_app/features/tasks/data/database_helper.dart';
+import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/features/tasks/logic/task_cubit/task_states.dart';
 
 class TasksCubit extends Cubit<TaskStates> {
   final DatabaseHelper _db;
   TasksCubit(this._db) : super(InitialState());
 
-  TaskFilter _filter = TaskFilter.all;
-
-  void changeFilter(TaskFilter filter) {
-    _filter = filter;
-    final current = state;
-    if (current is SuccessState) {
-      emit(SuccessState(current.tasks, filter: _filter));
-    }
-  }
-
   Future<void> loadTasks({bool showLoading = true, String? message}) async {
     if (showLoading) emit(LoadingState());
     try {
-      final rows = await _db.readData('SELECT * FROM Tasks');
+      // الترتيب حسب التاريخ + الوقت مع بعض:
+      // - اللي من غير تاريخ في الآخر
+      // - جوه نفس اليوم: اللي ليها وقت بالترتيب، واللي من غير وقت بعدهم
+      final rows = await _db.readData('''
+        SELECT * FROM Tasks
+        ORDER BY
+          date IS NULL,
+          date || ' ' || COALESCE(time, '23:59') ASC
+      ''');
       final tasks = rows.map<TaskModel>((r) => TaskModel.fromMap(r)).toList();
-      emit(SuccessState(tasks, filter: _filter, message: message));
+      emit(SuccessState(tasks, message: message));
     } catch (e) {
       _handleError(e);
     }
@@ -49,7 +47,7 @@ class TasksCubit extends Cubit<TaskStates> {
         'UPDATE Tasks SET $setClause WHERE id = ?',
         [...map.values, task.id],
       );
-    
+
       await _safeNotify(() => NotificationService.instance.schedule(task));
       await loadTasks(showLoading: false, message: 'Task updated');
     } catch (e) {
@@ -89,13 +87,13 @@ class TasksCubit extends Cubit<TaskStates> {
       _handleError(e);
     }
   }
+
   void _handleError(Object e) {
     final current = state;
     if (current is SuccessState) {
       emit(
         SuccessState(
           current.tasks,
-          filter: _filter,
           message: 'Something went wrong, please try again',
           isError: true,
         ),

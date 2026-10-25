@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/core/app_typography.dart';
 import 'package:to_do_app/core/validation_helper.dart';
-import 'package:to_do_app/data/task_model.dart';
-import 'package:to_do_app/logic/task_cubit/task_cubit.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/date_time_row.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/field_label.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/form_action_button.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/notification_card.dart';
-import 'package:to_do_app/presentation/task_operations/widgets/task_app_bar.dart';
+import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/date_time_row.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/field_label.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/form_action_button.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/notification_card.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/responsive.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/task_app_bar.dart';
 
 class AddTask extends StatefulWidget {
   const AddTask({super.key});
@@ -74,14 +74,12 @@ class _AddTaskState extends State<AddTask> {
             ),
             child: Form(
               key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "What's on your mind",
-                    style: AppTypography.lightTextTheme.displayLarge,
-                  ),
-                  const SizedBox(height: 16),
+              child: ResponsiveForm(
+                header: Text(
+                  "What's on your mind",
+                  style: Theme.of(context).textTheme.displayLarge,
+                ),
+                firstColumn: [
                   const FieldLabel(
                     'Task Title',
                     suffix: '*',
@@ -101,10 +99,10 @@ class _AddTaskState extends State<AddTask> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  const FieldLabel(
+                  FieldLabel(
                     'Description',
                     suffix: '(Optional)',
-                    suffixColor: AppColors.textSecondaryLight,
+                    suffixColor: context.colors.textSecondary,
                   ),
                   TextField(
                     controller: _descriptionController,
@@ -115,7 +113,8 @@ class _AddTaskState extends State<AddTask> {
                       hintText: 'Add subtle details, notes, or subtasks....',
                     ),
                   ),
-                  const SizedBox(height: 16),
+                ],
+                secondColumn: [
                   DateTimeRow(
                     date: _selectedDate,
                     time: _selectedTime,
@@ -132,7 +131,8 @@ class _AddTaskState extends State<AddTask> {
                   ),
                   const SizedBox(height: 16),
                   const NotificationHintCard(),
-                  const SizedBox(height: 36),
+                ],
+                actions: [
                   FormActionButton(
                     icon: Icons.check_rounded,
                     label: 'Save Task',

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/core/app_typography.dart';
 
 class ProgressCard extends StatelessWidget {
   final int completed;
@@ -18,6 +17,9 @@ class ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -25,7 +27,7 @@ class ProgressCard extends StatelessWidget {
         child: ListTile(
           leading: Container(
             decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
+              color: c.background,
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(12),
@@ -33,11 +35,11 @@ class ProgressCard extends StatelessWidget {
           ),
           title: Text(
             "$completed of $total completed",
-            style: AppTypography.lightTextTheme.titleLarge,
+            style: textTheme.titleLarge,
           ),
           subtitle: Text(
             "keep going, you're doing great!",
-            style: AppTypography.lightTextTheme.bodySmall,
+            style: textTheme.bodySmall,
           ),
           trailing: SizedBox(
             width: 50,
@@ -52,8 +54,8 @@ class ProgressCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: AppColors.borderLight,
-              progressColor: AppColors.secondaryAccentLight,
+              backgroundColor: c.border,
+              progressColor: c.secondaryAccent,
             ),
           ),
         ),
