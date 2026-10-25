@@ -43,7 +43,7 @@ class TaskModel {
       'description': description,
       'date': date != null ? DateFormat('yyyy-MM-dd').format(date!) : null,
       'time': time != null ? DateFormat('HH:mm').format(time!) : null,
-      'status': status.name, // 'pending' أو 'completed'
+      'status': status.name,
     };
   }
 }

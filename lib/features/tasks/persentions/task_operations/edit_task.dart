@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/validation_helper.dart';
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/delete_task.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/date_time_row.dart';
@@ -51,26 +51,20 @@ class _EditTaskState extends State<EditTask> {
   void _save() {
     if (!_formKey.currentState!.validate()) return;
 
-    // الفحص بس لو المستخدم غيّر التاريخ أو الوقت
-    if (_dateChanged || _timeChanged) {
-      final error = DateTimeValidator.check(_selectedDate, _selectedTime);
-      if (error != DateTimeError.none) {
-        setState(() => _dateTimeError = error);
-        return;
-      }
+    final error = context.read<TasksCubit>().submitUpdate(
+          original: widget.taskModel,
+          title: _titleController.text,
+          description: _descriptionController.text,
+          date: _selectedDate,
+          time: _selectedTime,
+          dateTimeChanged: _dateChanged || _timeChanged,
+        );
+
+    if (error != DateTimeError.none) {
+      setState(() => _dateTimeError = error);
+      return;
     }
 
-    final task = widget.taskModel;
-    context.read<TasksCubit>().updateTask(
-          TaskModel(
-            id: task.id,
-            status: task.status,
-            title: _titleController.text.trim(),
-            description: _descriptionController.text.trim(),
-            date: _selectedDate,
-            time: _selectedTime,
-          ),
-        );
     Navigator.pop(context);
   }
 

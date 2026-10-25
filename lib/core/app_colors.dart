@@ -25,10 +25,9 @@ abstract class AppColors {
 
   // Destructive Actions
   static const Color destructive = Color(0xFFE57373);
-  static const Color destructiveBg = destructiveBgLight; // للتوافق مع القديم
+  static const Color destructiveBg = destructiveBgLight; 
 }
 
-/// مجموعة ألوان واحدة بتتغير حسب الوضع (Light / Dark)
 class AppPalette {
   final Color background;
   final Color surface;

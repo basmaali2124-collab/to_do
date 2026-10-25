@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/delete_task.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/edit_task.dart';

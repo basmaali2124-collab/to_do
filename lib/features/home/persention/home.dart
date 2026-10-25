@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:to_do_app/core/app_colors.dart';
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_states.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
@@ -34,37 +34,14 @@ class _HomeState extends State<Home> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTask()));
   }
 
-  /// UI only: the decision of WHICH empty state to show lives in
-  /// `HomeState.emptyType`, here we just map it to texts.
-  Widget _buildEmpty(
-    BuildContext context,
-    SuccessState state,
-    HomeState homeState,
-  ) {
-    switch (homeState.emptyType(state.total)) {
-      case EmptyType.noTasks:
-        return EmptyState(
-          title: "Nothing on your list yet",
-          subtitle:
-              "Enjoy your free time or capture a new item to keep your mind clear.",
-          onAddPressed: () => _openAddTask(context),
-        );
-      case EmptyType.noResults:
-        return const EmptyState(
-          title: "No results found",
-          subtitle: "Try a different keyword or change the filter.",
-        );
-      case EmptyType.noPending:
-        return const EmptyState(
-          title: "No pending tasks",
-          subtitle: "Everything is done. Nice work!",
-        );
-      case EmptyType.noCompleted:
-        return const EmptyState(
-          title: "No completed tasks yet",
-          subtitle: "Finish a task and it will show up here.",
-        );
-    }
+  Widget _buildEmpty(BuildContext context, SuccessState state) {
+    final content = context.read<HomeCubit>().emptyContent(state.total);
+
+    return EmptyState(
+      title: content.title,
+      subtitle: content.subtitle,
+      onAddPressed: content.showAddButton ? () => _openAddTask(context) : null,
+    );
   }
 
   Widget _buildError(BuildContext context, String message) {
@@ -176,9 +153,7 @@ class _HomeState extends State<Home> {
                         taskState is InitialState) {
                       return Padding(
                         padding: EdgeInsets.only(top: 80.h),
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       );
                     }
                     if (taskState is FailedState) {
@@ -263,7 +238,7 @@ class _HomeState extends State<Home> {
                                 ),
                                 const SizedBox(height: 20),
                                 if (filtered.isEmpty)
-                                  _buildEmpty(context, success, homeState)
+                                  _buildEmpty(context, success)
                                 else
                                   _buildTasks(filtered),
                               ],

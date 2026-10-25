@@ -1,7 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 
 class NotificationService {
   NotificationService._();
@@ -61,8 +61,6 @@ class NotificationService {
     );
   }
 
-  /// بيجدول إشعار للـ task (لو pending ووقتها في المستقبل).
-  /// بيلغي القديم الأول، فتقدر تناديه عند الإضافة أو التعديل.
   Future<void> schedule(TaskModel task) async {
     if (task.id == null) return;
     await cancel(task.id!);
@@ -87,7 +85,6 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
     } catch (_) {
-      // لو إذن الميعاد الدقيق مش متاح، نجدول بميعاد تقريبي بدل ما نفشل
       await _plugin.zonedSchedule(
         id: task.id!,
         title: task.title,

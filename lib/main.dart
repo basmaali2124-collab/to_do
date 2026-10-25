@@ -7,7 +7,7 @@ import 'package:to_do_app/core/servicses/notification_service.dart';
 import 'package:to_do_app/features/tasks/data/database_helper.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
-import 'package:to_do_app/features/tasks/logic/theme_cubit.dart';
+import 'package:to_do_app/core/theme_cubit.dart';
 import 'package:to_do_app/features/home/persention/home.dart';
 
 Future<void> main() async {

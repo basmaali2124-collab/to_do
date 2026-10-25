@@ -15,4 +15,32 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void clearSearch() => changeSearch('');
+
+
+  EmptyContent emptyContent(int totalTasks) {
+    switch (state.emptyType(totalTasks)) {
+      case EmptyType.noTasks:
+        return const EmptyContent(
+          title: "Nothing on your list yet",
+          subtitle:
+              "Enjoy your free time or capture a new item to keep your mind clear.",
+          showAddButton: true,
+        );
+      case EmptyType.noResults:
+        return const EmptyContent(
+          title: "No results found",
+          subtitle: "Try a different keyword or change the filter.",
+        );
+      case EmptyType.noPending:
+        return const EmptyContent(
+          title: "No pending tasks",
+          subtitle: "Everything is done. Nice work!",
+        );
+      case EmptyType.noCompleted:
+        return const EmptyContent(
+          title: "No completed tasks yet",
+          subtitle: "Finish a task and it will show up here.",
+        );
+    }
+  }
 }

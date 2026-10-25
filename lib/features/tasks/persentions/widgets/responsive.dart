@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// بيقسم الفورم لعمودين على الشاشات العريضة، وعمود واحد على الموبايل.
 class ResponsiveForm extends StatelessWidget {
   final Widget header;
   final List<Widget> firstColumn;

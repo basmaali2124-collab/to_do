@@ -1,8 +1,20 @@
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 
 enum TaskFilter { all, pending, completed }
 
 enum EmptyType { noTasks, noResults, noPending, noCompleted }
+
+class EmptyContent {
+  final String title;
+  final String subtitle;
+  final bool showAddButton;
+
+  const EmptyContent({
+    required this.title,
+    required this.subtitle,
+    this.showAddButton = false,
+  });
+}
 
 class HomeState {
   final TaskFilter filter;
@@ -19,7 +31,7 @@ class HomeState {
     return EmptyType.noCompleted;
   }
 
- List<TaskModel> apply(List<TaskModel> tasks) {
+  List<TaskModel> apply(List<TaskModel> tasks) {
     Iterable<TaskModel> result = tasks;
 
     switch (filter) {

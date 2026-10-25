@@ -1,4 +1,4 @@
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 
 abstract class TaskStates {}
 

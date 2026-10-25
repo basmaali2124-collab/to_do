@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/validation_helper.dart';
-import 'package:to_do_app/features/tasks/data/task_model.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/date_time_row.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/field_label.dart';
@@ -22,9 +21,9 @@ class _AddTaskState extends State<AddTask> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  // الافتراضي: بعد ساعة من دلوقتي، عشان الـ Save بـ Title بس يشتغل
-  final DateTime _defaultDateTime =
-      DateTime.now().add(const Duration(hours: 1));
+  final DateTime _defaultDateTime = DateTime.now().add(
+    const Duration(hours: 1),
+  );
   late DateTime _selectedDate = _defaultDateTime;
   late DateTime _selectedTime = _defaultDateTime;
 
@@ -40,20 +39,18 @@ class _AddTaskState extends State<AddTask> {
   void _save() {
     if (!_formKey.currentState!.validate()) return;
 
-    final error = DateTimeValidator.check(_selectedDate, _selectedTime);
+    final error = context.read<TasksCubit>().submitTask(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          date: _selectedDate,
+          time: _selectedTime,
+        );
+
     if (error != DateTimeError.none) {
       setState(() => _dateTimeError = error);
       return;
     }
 
-    context.read<TasksCubit>().addTask(
-          TaskModel(
-            title: _titleController.text.trim(),
-            description: _descriptionController.text.trim(),
-            date: _selectedDate,
-            time: _selectedTime,
-          ),
-        );
     Navigator.pop(context);
   }
 

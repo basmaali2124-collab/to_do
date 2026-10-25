@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/servicses/notification_service.dart';
+import 'package:to_do_app/core/validation_helper.dart';
 import 'package:to_do_app/features/tasks/data/database_helper.dart';
-import 'package:to_do_app/features/tasks/data/task_model.dart';
+import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_states.dart';
 
 class TasksCubit extends Cubit<TaskStates> {
@@ -11,9 +14,6 @@ class TasksCubit extends Cubit<TaskStates> {
   Future<void> loadTasks({bool showLoading = true, String? message}) async {
     if (showLoading) emit(LoadingState());
     try {
-      // الترتيب حسب التاريخ + الوقت مع بعض:
-      // - اللي من غير تاريخ في الآخر
-      // - جوه نفس اليوم: اللي ليها وقت بالترتيب، واللي من غير وقت بعدهم
       final rows = await _db.readData('''
         SELECT * FROM Tasks
         ORDER BY
@@ -27,6 +27,55 @@ class TasksCubit extends Cubit<TaskStates> {
     }
   }
 
+  DateTimeError submitTask({
+    required String title,
+    required String description,
+    required DateTime date,
+    required DateTime time,
+  }) {
+    final error = DateTimeValidator.check(date, time);
+    if (error != DateTimeError.none) return error;
+
+    unawaited(
+      addTask(
+        TaskModel(
+          title: title.trim(),
+          description: description.trim(),
+          date: date,
+          time: time,
+        ),
+      ),
+    );
+    return DateTimeError.none;
+  }
+
+DateTimeError submitUpdate({
+  required TaskModel original,
+  required String title,
+  required String description,
+  required DateTime date,
+  required DateTime time,
+  required bool dateTimeChanged,
+}) {
+  if (dateTimeChanged) {
+    final error = DateTimeValidator.check(date, time);
+    if (error != DateTimeError.none) return error;
+  }
+
+  unawaited(
+    updateTask(
+      TaskModel(
+        id: original.id,
+        status: original.status,
+        title: title.trim(),
+        description: description.trim(),
+        date: date,
+        time: time,
+      ),
+    ),
+  );
+  return DateTimeError.none;
+}
   Future<void> addTask(TaskModel task) async {
     try {
       final id = await _db.insertData('Tasks', task.toMap());
@@ -68,7 +117,6 @@ class TasksCubit extends Cubit<TaskStates> {
       if (isCompleting) {
         await _safeNotify(() => NotificationService.instance.cancel(task.id!));
       } else {
-        // رجعت Pending: يجدول من جديد لو وقتها لسه في المستقبل
         await _safeNotify(() => NotificationService.instance.schedule(task));
       }
 
