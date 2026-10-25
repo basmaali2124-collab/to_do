@@ -2,6 +2,8 @@ import 'package:to_do_app/features/tasks/data/task_model.dart';
 
 enum TaskFilter { all, pending, completed }
 
+enum EmptyType { noTasks, noResults, noPending, noCompleted }
+
 class HomeState {
   final TaskFilter filter;
   final String query;
@@ -10,8 +12,14 @@ class HomeState {
 
   bool get isSearching => query.trim().isNotEmpty;
 
-  /// بتطبق الفلتر ثم البحث، وبتحافظ على الترتيب
-  List<TaskModel> apply(List<TaskModel> tasks) {
+  EmptyType emptyType(int totalTasks) {
+    if (totalTasks == 0) return EmptyType.noTasks;
+    if (isSearching) return EmptyType.noResults;
+    if (filter == TaskFilter.pending) return EmptyType.noPending;
+    return EmptyType.noCompleted;
+  }
+
+ List<TaskModel> apply(List<TaskModel> tasks) {
     Iterable<TaskModel> result = tasks;
 
     switch (filter) {

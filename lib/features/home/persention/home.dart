@@ -34,35 +34,37 @@ class _HomeState extends State<Home> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTask()));
   }
 
+  /// UI only: the decision of WHICH empty state to show lives in
+  /// `HomeState.emptyType`, here we just map it to texts.
   Widget _buildEmpty(
     BuildContext context,
     SuccessState state,
     HomeState homeState,
   ) {
-    if (state.total == 0) {
-      return EmptyState(
-        title: "Nothing on your list yet",
-        subtitle:
-            "Enjoy your free time or capture a new item to keep your mind clear.",
-        onAddPressed: () => _openAddTask(context),
-      );
+    switch (homeState.emptyType(state.total)) {
+      case EmptyType.noTasks:
+        return EmptyState(
+          title: "Nothing on your list yet",
+          subtitle:
+              "Enjoy your free time or capture a new item to keep your mind clear.",
+          onAddPressed: () => _openAddTask(context),
+        );
+      case EmptyType.noResults:
+        return const EmptyState(
+          title: "No results found",
+          subtitle: "Try a different keyword or change the filter.",
+        );
+      case EmptyType.noPending:
+        return const EmptyState(
+          title: "No pending tasks",
+          subtitle: "Everything is done. Nice work!",
+        );
+      case EmptyType.noCompleted:
+        return const EmptyState(
+          title: "No completed tasks yet",
+          subtitle: "Finish a task and it will show up here.",
+        );
     }
-    if (homeState.isSearching) {
-      return const EmptyState(
-        title: "No results found",
-        subtitle: "Try a different keyword or change the filter.",
-      );
-    }
-    if (homeState.filter == TaskFilter.pending) {
-      return const EmptyState(
-        title: "No pending tasks",
-        subtitle: "Everything is done. Nice work!",
-      );
-    }
-    return const EmptyState(
-      title: "No completed tasks yet",
-      subtitle: "Finish a task and it will show up here.",
-    );
   }
 
   Widget _buildError(BuildContext context, String message) {
@@ -91,12 +93,18 @@ class _HomeState extends State<Home> {
     );
   }
 
+  int _columnsFor(double width) {
+    if (width >= 900) return 3;
+    if (width >= 560) return 2;
+    return 1;
+  }
+
   Widget _buildTasks(List<TaskModel> tasks) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 12.0;
         final width = constraints.maxWidth;
-        final columns = width >= 900 ? 3 : (width >= 560 ? 2 : 1);
+        final columns = _columnsFor(width);
 
         if (columns == 1) {
           return ListView.separated(
@@ -178,9 +186,6 @@ class _HomeState extends State<Home> {
                     }
 
                     final success = taskState as SuccessState;
-                    final percent = success.total == 0
-                        ? 0.0
-                        : success.completedCount / success.total;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +193,7 @@ class _HomeState extends State<Home> {
                         ProgressCard(
                           completed: success.completedCount,
                           total: success.total,
-                          percent: percent,
+                          percent: success.percent,
                         ),
                         const SizedBox(height: 12),
                         BlocBuilder<HomeCubit, HomeState>(
@@ -215,7 +220,7 @@ class _HomeState extends State<Home> {
                                             ),
                                             onPressed: () {
                                               _searchController.clear();
-                                              homeCubit.changeSearch('');
+                                              homeCubit.clearSearch();
                                             },
                                           )
                                         : null,

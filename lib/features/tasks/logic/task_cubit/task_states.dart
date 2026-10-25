@@ -23,4 +23,7 @@ class SuccessState extends TaskStates {
       tasks.where((t) => t.status == Status.pending).length;
   int get completedCount =>
       tasks.where((t) => t.status == Status.completed).length;
+
+ 
+  double get percent => total == 0 ? 0.0 : completedCount / total;
 }

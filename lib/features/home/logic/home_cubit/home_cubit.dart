@@ -13,4 +13,6 @@ class HomeCubit extends Cubit<HomeState> {
     if (query == state.query) return;
     emit(state.copyWith(query: query));
   }
+
+  void clearSearch() => changeSearch('');
 }
