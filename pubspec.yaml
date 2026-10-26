@@ -43,6 +43,8 @@ dependencies:
   flutter_local_notifications: ^20.1.0
   timezone: ^0.10.1
   flutter_screenutil: ^5.9.3
+  speech_to_text: ^7.4.0
+  dio: ^5.11.1
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:to_do_app/core/app_theme.dart';
 import 'package:to_do_app/core/servicses/notification_service.dart';
+import 'package:to_do_app/core/servicses/voice%20service/voice_service.dart';
 import 'package:to_do_app/features/tasks/data/database_helper.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
@@ -14,6 +15,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ScreenUtil.ensureScreenSize();
   await NotificationService.instance.init();
+  await VoiceService.istance.init();
 
   runApp(
     MultiBlocProvider(
