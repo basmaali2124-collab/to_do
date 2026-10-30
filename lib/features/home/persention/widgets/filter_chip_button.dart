@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:to_do_app/core/app_colors.dart';
 
-class StatusButton extends StatelessWidget {
-  final String name;
-  final int num;
+class FilterChipButton extends StatelessWidget {
+  final String label;
   final bool isSelected;
   final VoidCallback onPressed;
 
-  const StatusButton({
+  const FilterChipButton({
     super.key,
-    required this.name,
-    required this.num,
+    required this.label,
     required this.isSelected,
     required this.onPressed,
   });
@@ -30,7 +28,7 @@ class StatusButton extends StatelessWidget {
           foregroundColor: isSelected ? c.surface : c.textSecondary,
         ),
         onPressed: onPressed,
-        child: Text("$name  ($num)"),
+        child: Text(label),
       ),
     );
   }

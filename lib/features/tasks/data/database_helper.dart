@@ -18,14 +18,16 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE Tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        date TEXT,
-        time TEXT,
-        status TEXT NOT NULL DEFAULT 'pending'
-          CHECK(status IN ('pending', 'completed'))
-      )
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  startAt TEXT NOT NULL,
+  endAt TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  priority TEXT NOT NULL DEFAULT 'low',
+  category TEXT NOT NULL DEFAULT 'others',
+  subtasks TEXT NOT NULL DEFAULT '[]'
+)
     ''');
   }
 

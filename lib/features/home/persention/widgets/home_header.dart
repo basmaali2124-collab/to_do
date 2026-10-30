@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/theme_cubit.dart';
+import 'package:to_do_app/features/tasks/persentions/task_operations/add_task.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -34,36 +34,29 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Column(
-          children: [
-            Card(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 6, horizontal: 18),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today_outlined,
-                        size: 14, color: c.secondaryAccent),
-                    const SizedBox(width: 8),
-                    Text(DateFormat('MMM dd').format(DateTime.now())),
-                    IconButton(
-              tooltip: context.isDark ? 'Light mode' : 'Dark mode',
-              onPressed: () => context
-                  .read<ThemeCubit>()
-                  .toggle(Theme.of(context).brightness),
-              icon: Icon(
-                context.isDark
-                    ? Icons.light_mode_rounded
-                    : Icons.dark_mode_rounded,
-                color: c.secondaryAccent,
-              ),
-            ),
-                  ],
+        Card(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () => context.read<ThemeCubit>().toggle(
+                  Theme.of(context).brightness,
+                ),
+                icon: Icon(
+                  context.isDark
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
+                  color: c.secondaryAccent,
                 ),
               ),
-            ),
-           
-          ],
+              IconButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddTask()),
+                ),
+                icon: Icon(Icons.add, size: 34, color: c.secondaryAccent),
+              ),
+            ],
+          ),
         ),
       ],
     );

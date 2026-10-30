@@ -51,14 +51,7 @@ class NotificationService {
   }
 
   DateTime? _scheduledDateTime(TaskModel task) {
-    if (task.date == null || task.time == null) return null;
-    return DateTime(
-      task.date!.year,
-      task.date!.month,
-      task.date!.day,
-      task.time!.hour,
-      task.time!.minute,
-    );
+    return task.endAt ?? task.startAt;
   }
 
   Future<void> schedule(TaskModel task) async {
