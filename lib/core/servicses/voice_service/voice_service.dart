@@ -8,25 +8,28 @@ class VoiceService extends ChangeNotifier {
 
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
-  bool _initializing = false;
+  bool _finalReceived = false;
+  bool _stopRequested = false;
   String _lastWords = '';
   String? _localeId;
   String? _lastError;
 
-  bool finalReceived = false;
+  Future<void>? _initFuture;
 
   bool get speechEnabled => _speechEnabled;
   bool get isListening => _speechToText.isListening;
+  bool get finalReceived => _finalReceived;
   String get lastWords => _lastWords;
   String? get lastError => _lastError;
 
   bool get usingFallbackLocale => _speechEnabled && _localeId == null;
 
-  bool _stopRequested = false;
+  Future<void> init() {
+    if (_speechEnabled) return Future.value();
+    return _initFuture ??= _doInit().whenComplete(() => _initFuture = null);
+  }
 
-  Future<void> init() async {
-    if (_speechEnabled || _initializing) return;
-    _initializing = true;
+  Future<void> _doInit() async {
     try {
       _speechEnabled = await _speechToText.initialize(
         onStatus: (_) => notifyListeners(),
@@ -48,8 +51,6 @@ class VoiceService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Speech init failed: $e');
       _speechEnabled = false;
-    } finally {
-      _initializing = false;
     }
     notifyListeners();
   }
@@ -65,7 +66,7 @@ class VoiceService extends ChangeNotifier {
     _stopRequested = false;
     _lastWords = '';
     _lastError = null;
-    finalReceived = false;
+    _finalReceived = false;
 
     await _speechToText.listen(
       onResult: _onSpeechResult,
@@ -97,12 +98,12 @@ class VoiceService extends ChangeNotifier {
       }
     }
 
-    _localeId = null;//'ar_EG';
+    _localeId = null;
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
     _lastWords = result.recognizedWords;
-    if (result.finalResult) finalReceived = true;
+    if (result.finalResult) _finalReceived = true;
     notifyListeners();
   }
 }

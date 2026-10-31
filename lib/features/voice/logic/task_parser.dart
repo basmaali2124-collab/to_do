@@ -1,14 +1,16 @@
 import 'dart:convert';
 
 import 'package:to_do_app/core/task_model.dart';
-import 'package:to_do_app/features/voice/logic/parsed_task.dart';
+
 abstract class TaskParser {
+  static const _defaultDuration = Duration(hours: 1);
+
   static DateTime defaultDue() {
     final d = DateTime.now().add(const Duration(hours: 1));
     return DateTime(d.year, d.month, d.day, d.hour, d.minute);
   }
 
-  static List<ParsedTask> parse(String reply, {required String fallbackTitle}) {
+  static List<TaskModel> parse(String reply, {required String fallbackTitle}) {
     final start = reply.indexOf('{');
     final end = reply.lastIndexOf('}');
     if (start == -1 || end <= start) {
@@ -29,20 +31,34 @@ abstract class TaskParser {
             fallbackTitle: items.length == 1 ? fallbackTitle : null,
           ),
         )
-        .whereType<ParsedTask>()
+        .whereType<TaskModel>()
         .toList();
   }
 
-  static ParsedTask? _parseOne(
+  static TaskModel? _parseOne(
     Map<String, dynamic> json, {
     String? fallbackTitle,
   }) {
     final title = _clean(json['title']) ?? fallbackTitle;
     if (title == null) return null;
 
-    final date = _date(json['date']);
-    final time = _time(json['time']);
+    final startAt = _resolveStart(_date(json['date']), _time(json['time']));
 
+    return TaskModel(
+      title: title,
+      description: _cleanDescription(json['description'], title),
+      startAt: startAt,
+      endAt: _parseEnd(json, start: startAt) ?? startAt.add(_defaultDuration),
+      priority: _priorityFrom(json['priority']),
+      category: _enumFrom(Category.values, json['category'], Category.others),
+      subtasks: _parseSubtasks(json['subtasks'], title: title),
+    );
+  }
+
+static DateTime _resolveStart(
+    DateTime? date,
+    ({int hour, int minute})? time,
+  ) {
     final now = DateTime.now();
     final fallback = defaultDue();
     final today = DateTime(now.year, now.month, now.day);
@@ -60,16 +76,7 @@ abstract class TaskParser {
     if (date == null && result.isBefore(now)) {
       result = result.add(const Duration(days: 1));
     }
-
-    return ParsedTask(
-      title: title,
-      description: _cleanDescription(json['description'], title),
-      dateTime: result,
-      subtasks: _parseSubtasks(json['subtasks'], title: title),
-      endDateTime: _parseEnd(json, start: result),
-      priority: _priorityFrom(json['priority']),
-      category: _enumFrom(Category.values, json['category'], Category.others),
-    );
+    return result;
   }
 
   static String? _cleanDescription(Object? raw, String title) {
@@ -111,7 +118,7 @@ abstract class TaskParser {
       endTime?.hour ?? start.hour,
       endTime?.minute ?? start.minute,
     );
- if (endDate == null && end.isBefore(start)) {
+    if (endDate == null && end.isBefore(start)) {
       end = end.add(const Duration(days: 1));
     }
     return end.isAfter(start) ? end : null;
@@ -162,7 +169,8 @@ abstract class TaskParser {
     final dt = DateTime(y, mo, d);
     return dt.month == mo ? dt : null;
   }
- static ({int hour, int minute})? _time(Object? v) {
+
+  static ({int hour, int minute})? _time(Object? v) {
     final s = _clean(v);
     if (s == null) return null;
     final m = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(s);

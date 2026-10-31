@@ -19,8 +19,7 @@ class TaskCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     final isDone = task.status == Status.completed;
-    final due = task.endAt ?? task.startAt;
-    final isOverdue = !isDone && due != null && due.isBefore(DateTime.now());
+    final isOverdue = task.isOverdue;
     final priorityColor =
         isDone ? c.taskCompleted : task.priority.colorOf(context);
     final hasDescription =

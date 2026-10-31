@@ -1,7 +1,5 @@
 import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_enums.dart';
-
-// بيعيد تصدير الـ enums عشان أي ملف بيعمل import لـ home_states.dart يفضل شغال.
 export 'package:to_do_app/features/home/logic/home_cubit/home_enums.dart';
 
 class HomeState {

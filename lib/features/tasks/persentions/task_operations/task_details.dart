@@ -4,12 +4,12 @@ import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/extensions.dart';
 import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/core/widgets/app_pill.dart';
-import 'package:to_do_app/features/tasks/persentions/widgets/small_button.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_states.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/delete_task.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/edit_task.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/section_card.dart';
+import 'package:to_do_app/features/tasks/persentions/widgets/small_button.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/subtask_checklist_card.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/task_app_bar.dart';
 import 'package:to_do_app/features/tasks/persentions/widgets/task_dates_card.dart';
@@ -23,30 +23,32 @@ class TaskDetails extends StatefulWidget {
 }
 
 class _TaskDetailsState extends State<TaskDetails> {
-  late TaskModel _task = widget.task;
+ late TaskModel _lastKnown = widget.task;
   bool _closing = false;
+
+  TaskModel? _findTask(List<TaskModel> tasks) {
+    for (final t in tasks) {
+      if (t.id == widget.task.id) return t;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TasksCubit, TaskStates>(
-      builder: (context, state) {
-        if (state is SuccessState) {
-          TaskModel? found;
-          for (final t in state.tasks) {
-            if (t.id == widget.task.id) {
-              found = t;
-              break;
-            }
-          }
-          if (found != null) {
-            _task = found;
-          } else if (!_closing) {
-            _closing = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) Navigator.pop(context);
-            });
-          }
+    return BlocConsumer<TasksCubit, TaskStates>(
+      listenWhen: (_, current) => current is SuccessState,
+      listener: (context, state) {
+        final found = _findTask((state as SuccessState).tasks);
+        if (found != null) {
+          _lastKnown = found;
+        } else if (!_closing) {
+         _closing = true;
+          Navigator.pop(context);
         }
+      },
+      builder: (context, state) {
+        final task =
+            state is SuccessState ? (_findTask(state.tasks) ?? _lastKnown) : _lastKnown;
 
         return Scaffold(
           appBar: taskFormAppBar(context, 'Task Details'),
@@ -56,7 +58,7 @@ class _TaskDetailsState extends State<TaskDetails> {
                 constraints: const BoxConstraints(maxWidth: 640),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
-                  child: _buildBody(context),
+                  child: _buildBody(context, task),
                 ),
               ),
             ),
@@ -66,14 +68,12 @@ class _TaskDetailsState extends State<TaskDetails> {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, TaskModel task) {
     final c = context.colors;
     final textTheme = Theme.of(context).textTheme;
-    final task = _task;
 
     final isDone = task.status == Status.completed;
-    final due = task.endAt ?? task.startAt;
-    final isOverdue = !isDone && due != null && due.isBefore(DateTime.now());
+    final isOverdue = task.isOverdue;
     final hasDescription =
         task.description != null && task.description!.trim().isNotEmpty;
 
@@ -112,11 +112,8 @@ class _TaskDetailsState extends State<TaskDetails> {
                 SmallButton(
                   icon: Icons.delete_outline_rounded,
                   onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (_) => const DeleteTask(),
-                    );
-                    if (confirmed == true && context.mounted) {
+                    final confirmed = await DeleteTask.show(context);
+                    if (confirmed && context.mounted) {
                       context.read<TasksCubit>().deleteTask(task.id!);
                     }
                   },
@@ -127,7 +124,7 @@ class _TaskDetailsState extends State<TaskDetails> {
           ],
         ),
         const SizedBox(height: 12),
-         Wrap(
+        Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
@@ -161,8 +158,7 @@ class _TaskDetailsState extends State<TaskDetails> {
           ],
         ),
         const SizedBox(height: 20),
-
-         SectionCard(
+        SectionCard(
           children: [
             Text(
               'Description',
@@ -181,12 +177,11 @@ class _TaskDetailsState extends State<TaskDetails> {
           ],
         ),
         const SizedBox(height: 16),
-
         if (task.startAt != null || task.endAt != null) ...[
           TaskDatesCard(startAt: task.startAt, endAt: task.endAt),
           const SizedBox(height: 16),
         ],
- SubtasksChecklistCard(
+        SubtasksChecklistCard(
           subtasks: task.subtasks,
           onToggle: (i) => context.read<TasksCubit>().toggleSubtask(task, i),
         ),

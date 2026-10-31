@@ -3,6 +3,13 @@ import 'package:to_do_app/core/app_colors.dart';
 
 class DeleteTask extends StatelessWidget {
   const DeleteTask({super.key});
+ static Future<bool> show(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => const DeleteTask(),
+    );
+    return result == true;
+  }
 
   @override
   Widget build(BuildContext context) {

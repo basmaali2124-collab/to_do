@@ -3,20 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/servicses/voice_service/voice_service.dart';
-import 'package:to_do_app/core/task_model.dart';
-import 'package:to_do_app/core/validation_helper.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
-import 'package:to_do_app/features/voice/data/ai_service.dart';
-import 'package:to_do_app/features/voice/logic/ai_prompt.dart';
-import 'package:to_do_app/features/voice/logic/parsed_task.dart';
-import 'package:to_do_app/features/voice/logic/task_parser.dart';
+import 'package:to_do_app/features/voice/data/ai_exception.dart';
+import 'package:to_do_app/features/voice/logic/voice_task_extractor.dart';
 
 part 'voice_state.dart';
 
 class VoiceTaskCubit extends Cubit<VoiceTaskState> {
   final TasksCubit _tasksCubit;
   final VoiceService _voice;
-  final AiService _ai;
+  final VoiceTaskExtractor _extractor;
   String _text = '';
   bool _wasListening = false;
   bool _processing = false;
@@ -25,10 +21,10 @@ class VoiceTaskCubit extends Cubit<VoiceTaskState> {
   VoiceTaskCubit({
     required TasksCubit tasksCubit,
     VoiceService? voice,
-    AiService? ai,
+    VoiceTaskExtractor? extractor,
   })  : _tasksCubit = tasksCubit,
         _voice = voice ?? VoiceService.instance,
-        _ai = ai ?? AiService.instance,
+        _extractor = extractor ?? VoiceTaskExtractor(),
         super(const VoiceIdle()) {
     _voice.addListener(_onVoiceChanged);
   }
@@ -118,19 +114,6 @@ class VoiceTaskCubit extends Cubit<VoiceTaskState> {
     }
   }
 
-  TaskModel _toModel(ParsedTask t) {
-    final desc = (t.description ?? '').trim();
-    return TaskModel(
-      title: t.title.trim(),
-      description: desc.isEmpty ? null : desc,
-      startAt: t.dateTime,
-      endAt: t.endOrDefault,
-      priority: t.priority,
-      category: t.category,
-      subtasks: t.subtasks,
-    );
-  }
-
   Future<void> _extract() async {
     final raw = _text.trim();
     debugPrint('VOICE text: "$raw" (error: ${_voice.lastError})');
@@ -143,7 +126,7 @@ class VoiceTaskCubit extends Cubit<VoiceTaskState> {
       return;
     }
 
-    if (!_ai.isConfigured) {
+    if (!_extractor.isConfigured) {
       debugPrint('AI skipped: OPENROUTER_API_KEY is not set in .env');
       _fail('AI is not configured');
       return;
@@ -152,12 +135,10 @@ class VoiceTaskCubit extends Cubit<VoiceTaskState> {
     _processing = true;
     _emit(const VoiceProcessing());
 
-    List<ParsedTask>? tasks;
+    ExtractionResult? result;
     String? failure;
     try {
-      final reply = await _ai.chat(raw, system: AiPrompt.forText(raw));
-      debugPrint('AI reply: $reply');
-      tasks = TaskParser.parse(reply, fallbackTitle: raw);
+      result = await _extractor.extract(raw);
     } catch (e, st) {
       debugPrint('AI error: $e\n$st');
       failure = e is AiException
@@ -169,32 +150,28 @@ class VoiceTaskCubit extends Cubit<VoiceTaskState> {
 
     if (isClosed) return;
 
-    if (tasks == null || tasks.isEmpty) {
+    if (result == null || result.total == 0) {
       _fail(failure ?? 'Could not analyze the text, try again');
       return;
     }
-    await _save(tasks);
-  }
-
-  Future<void> _save(List<ParsedTask> parsed) async {
-    final valid = <TaskModel>[];
-    for (final p in parsed) {
-      final model = _toModel(p);
-      final error = DateTimeValidator.checkRange(model.startAt!, model.endAt!);
-      if (error == DateTimeError.none) valid.add(model);
-    }
-    final skipped = parsed.length - valid.length;
-
-    if (valid.isEmpty) {
+    if (result.valid.isEmpty) {
       _fail('That time has already passed, try again');
       return;
     }
+    await _save(result);
+  }
 
-    await _tasksCubit.addTasks(valid);
-    if (skipped > 0) {
-      _emit(VoiceError('$skipped task(s) skipped: time already passed'));
-    }
-    _emit(VoiceDone(valid.length));
+  Future<void> _save(ExtractionResult result) async {
+    final skipped = result.skipped;
+
+   final saved = await _tasksCubit.addTasks(
+      result.valid,
+      message: skipped > 0
+          ? '${result.valid.length} added, $skipped skipped (time already passed)'
+          : null,
+    );
+
+    _emit(saved ? VoiceDone(result.valid.length) : const VoiceIdle());
   }
 
   @override

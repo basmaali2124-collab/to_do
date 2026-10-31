@@ -66,3 +66,23 @@ extension TaskFormatting on TaskModel {
     return hour.format((s ?? e)!);
   }
 }
+
+extension TaskLogic on TaskModel {
+  bool get isOverdue {
+    if (status == Status.completed) return false;
+    final due = endAt ?? startAt;
+    return due != null && due.isBefore(DateTime.now());
+  }
+}
+
+extension SubTaskListStatus on List<SubTask> {
+  Status resolveStatus(Status current) {
+    if (isEmpty) return current;
+    return every((s) => s.isCompleted) ? Status.completed : Status.pending;
+  }
+}
+
+extension DateTimeCombine on DateTime {
+  DateTime withTime(DateTime time) =>
+      DateTime(year, month, day, time.hour, time.minute);
+}

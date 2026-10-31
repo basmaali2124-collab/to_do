@@ -1,33 +1,30 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/voice/logic/voice_cubit.dart';
 
-class VoiceMicButton extends StatefulWidget {
+class VoiceMicButton extends StatelessWidget {
   const VoiceMicButton({super.key});
 
   @override
-  State<VoiceMicButton> createState() => _VoiceMicButtonState();
+  Widget build(BuildContext context) {
+   return BlocProvider(
+      create: (context) =>
+          VoiceTaskCubit(tasksCubit: context.read<TasksCubit>()),
+      child: const _MicView(),
+    );
+  }
 }
 
-class _VoiceMicButtonState extends State<VoiceMicButton> {
-  late final VoiceTaskCubit _cubit =
-      VoiceTaskCubit(tasksCubit: context.read<TasksCubit>());
-
-  @override
-  void dispose() {
-    _cubit.close();
-    super.dispose();
-  }
+class _MicView extends StatelessWidget {
+  const _MicView();
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
 
     return BlocConsumer<VoiceTaskCubit, VoiceTaskState>(
-      bloc: _cubit,
       listenWhen: (_, curr) => curr is VoiceError,
       listener: (context, state) {
         final error = state as VoiceError;
@@ -58,7 +55,7 @@ class _VoiceMicButtonState extends State<VoiceMicButton> {
           style: IconButton.styleFrom(backgroundColor: c.textMain),
           onPressed: () {
             FocusScope.of(context).unfocus();
-            _cubit.toggle();
+            context.read<VoiceTaskCubit>().toggle();
           },
           tooltip: isListening ? 'Stop' : 'Add task by voice',
           icon: Icon(

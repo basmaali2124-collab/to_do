@@ -23,7 +23,6 @@ class _SearchSortBarState extends State<SearchSortBar> {
   @override
   void initState() {
     super.initState();
-    // بنبدأ بقيمة البحث الحالية عشان لو الـ widget اتبنى من جديد النص ميضيعش.
     _controller = TextEditingController(text: widget.homeState.query);
   }
 

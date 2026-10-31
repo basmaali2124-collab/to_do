@@ -16,8 +16,7 @@ class SmallButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
       onPressed: onPressed,
-      icon: Icon(icon, color: AppColors.secondaryAccentDark),
+      icon: Icon(icon, color: context.colors.secondaryAccent),
     );
   }
 }
-
