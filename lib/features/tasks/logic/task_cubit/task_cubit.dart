@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:to_do_app/core/extensions.dart';
 import 'package:to_do_app/core/servicses/notification_service.dart';
 import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/core/validation_helper.dart';
@@ -9,9 +8,9 @@ import 'package:to_do_app/features/tasks/logic/task_cubit/task_states.dart';
 
 class TasksCubit extends Cubit<TaskStates> {
   final TaskRepository _repo;
- TasksCubit(DatabaseHelper db)
-      : _repo = TaskRepository(db),
-        super(InitialState());
+  TasksCubit(DatabaseHelper db)
+    : _repo = TaskRepository(db),
+      super(InitialState());
 
   Future<void> loadTasks({bool showLoading = true, String? message}) async {
     if (showLoading) emit(LoadingState());
@@ -83,6 +82,8 @@ class TasksCubit extends Cubit<TaskStates> {
 
   Future<void> addTask(TaskModel task) => addTasks([task]);
 
+  /// بترجّع true لو كل التاسكات اتحفظت، false لو حصل خطأ.
+  /// [message] لو اتبعتت بتحل محل الرسالة الافتراضية.
   Future<bool> addTasks(List<TaskModel> tasks, {String? message}) async {
     try {
       for (final task in tasks) {
@@ -91,7 +92,8 @@ class TasksCubit extends Cubit<TaskStates> {
       }
       await loadTasks(
         showLoading: false,
-        message: message ??
+        message:
+            message ??
             (tasks.length == 1 ? 'Task added' : '${tasks.length} tasks added'),
       );
       return true;
@@ -191,11 +193,13 @@ class TasksCubit extends Cubit<TaskStates> {
       emit(FailedState(e.toString()));
     }
   }
- Future<void> _syncNotification(TaskModel task) => _safeNotify(
-        () => task.status == Status.completed
-            ? NotificationService.instance.cancel(task.id!)
-            : NotificationService.instance.schedule(task),
-      );
+
+  /// لو التاسك خلصت بيلغي الإشعار، غير كده بيجدوله.
+  Future<void> _syncNotification(TaskModel task) => _safeNotify(
+    () => task.status == Status.completed
+        ? NotificationService.instance.cancel(task.id!)
+        : NotificationService.instance.schedule(task),
+  );
 
   Future<void> _safeNotify(Future<void> Function() action) async {
     try {

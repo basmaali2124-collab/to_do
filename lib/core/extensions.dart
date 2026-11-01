@@ -3,6 +3,12 @@ import 'package:intl/intl.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/task_model.dart';
 
+extension NavigatorExtension on BuildContext{
+ void toView(Widget view){
+    Navigator.push( this, MaterialPageRoute(builder: (_) => view),);
+  }
+}
+
 extension EnumLabel on Enum {
   String get label => name[0].toUpperCase() + name.substring(1);
 }
@@ -64,21 +70,6 @@ extension TaskFormatting on TaskModel {
       return '${hour.format(s)} - ${hour.format(e)}';
     }
     return hour.format((s ?? e)!);
-  }
-}
-
-extension TaskLogic on TaskModel {
-  bool get isOverdue {
-    if (status == Status.completed) return false;
-    final due = endAt ?? startAt;
-    return due != null && due.isBefore(DateTime.now());
-  }
-}
-
-extension SubTaskListStatus on List<SubTask> {
-  Status resolveStatus(Status current) {
-    if (isEmpty) return current;
-    return every((s) => s.isCompleted) ? Status.completed : Status.pending;
   }
 }
 

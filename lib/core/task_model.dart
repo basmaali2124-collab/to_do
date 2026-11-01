@@ -5,6 +5,8 @@ enum Status { pending, completed }
 enum TaskPriority { low, medium, high }
 enum Category { work, personal, health, home, shopping, others }
 
+final DateFormat _dbDateFormat = DateFormat('yyyy-MM-dd-HH:mm');
+
 class TaskModel {
   int? id;
   String title;
@@ -28,6 +30,11 @@ class TaskModel {
     this.subtasks = const [],
   });
 
+  bool get isOverdue {
+    if (status == Status.completed) return false;
+    final due = endAt ?? startAt;
+    return due != null && due.isBefore(DateTime.now());
+  }
   factory TaskModel.fromMap(Map<String, dynamic> data) {
     List<SubTask> parsedSubtasks = [];
     if (data['subtasks'] != null && data['subtasks'].toString().isNotEmpty) {
@@ -40,16 +47,15 @@ class TaskModel {
         parsedSubtasks = [];
       }
     }
-
     return TaskModel(
       id: data['id'] as int?,
       title: data['title'] as String,
       description: data['description'] as String?,
       startAt: data['startAt'] != null
-          ? DateFormat('yyyy-MM-dd-HH:mm').parse(data['startAt'] as String)
+          ? _dbDateFormat.parse(data['startAt'] as String)
           : null,
       endAt: data['endAt'] != null
-          ? DateFormat('yyyy-MM-dd-HH:mm').parse(data['endAt'] as String)
+          ? _dbDateFormat.parse(data['endAt'] as String)
           : null,
       status: (data['status'] as String?) == 'completed'
           ? Status.completed
@@ -71,20 +77,15 @@ class TaskModel {
       if (id != null) 'id': id,
       'title': title,
       'description': description,
-      'startAt': startAt != null
-          ? DateFormat('yyyy-MM-dd-HH:mm').format(startAt!)
-          : null,
-      'endAt': endAt != null
-          ? DateFormat('yyyy-MM-dd-HH:mm').format(endAt!)
-          : null,
-      'status': status.name, 
+      'startAt': startAt != null ? _dbDateFormat.format(startAt!) : null,
+      'endAt': endAt != null ? _dbDateFormat.format(endAt!) : null,
+      'status': status.name,
       'priority': priority.name,
       'category': category.name,
       'subtasks': jsonEncode(subtasks.map((e) => e.toMap()).toList()),
     };
   }
 }
-
 
 class SubTask {
   String title;
@@ -107,5 +108,12 @@ class SubTask {
       'title': title,
       'isCompleted': isCompleted,
     };
+  }
+}
+
+extension SubTaskListStatus on List<SubTask> {
+  Status resolveStatus(Status current) {
+    if (isEmpty) return current;
+    return every((s) => s.isCompleted) ? Status.completed : Status.pending;
   }
 }

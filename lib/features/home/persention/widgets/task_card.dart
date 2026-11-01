@@ -4,7 +4,7 @@ import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/core/extensions.dart';
 import 'package:to_do_app/core/task_model.dart';
 import 'package:to_do_app/core/widgets/app_pill.dart';
-import 'package:to_do_app/core/widgets/tint_chip.dart';
+import 'package:to_do_app/features/home/persention/widgets/tint_chip.dart';
 import 'package:to_do_app/features/tasks/logic/task_cubit/task_cubit.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/task_details.dart';
 
@@ -35,12 +35,7 @@ class TaskCard extends StatelessWidget {
         side: BorderSide(color: c.border),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => TaskDetails(task: task)),
-          );
-        },
+        onTap: () {context.toView(TaskDetails(task: task));},
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 14, 14, 14),
           child: Row(

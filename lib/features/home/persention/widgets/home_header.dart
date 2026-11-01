@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
+import 'package:to_do_app/core/extensions.dart';
 import 'package:to_do_app/core/theme_cubit.dart';
 import 'package:to_do_app/features/tasks/persentions/task_operations/add_task.dart';
 
@@ -49,10 +50,7 @@ class HomeHeader extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AddTask()),
-                ),
+                onPressed: () =>context.toView(const AddTask()),
                 icon: Icon(Icons.add, size: 34, color: c.secondaryAccent),
               ),
             ],

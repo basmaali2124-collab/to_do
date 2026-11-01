@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_states.dart';
 import 'package:to_do_app/features/home/persention/widgets/filter_chip_button.dart';
@@ -9,12 +10,10 @@ class StatusFilter extends StatelessWidget {
     super.key,
     required this.success,
     required this.filter,
-    required this.homeCubit,
   });
 
   final SuccessState success;
   final StatusFilterType filter;
-  final HomeCubit homeCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +32,7 @@ class StatusFilter extends StatelessWidget {
             FilterChipButton(
               label: '$name  ($count)',
               isSelected: filter == type,
-              onPressed: () => homeCubit.changeFilter(type),
+              onPressed: () => context.read<HomeCubit>().changeFilter(type),
             ),
         ],
       ),

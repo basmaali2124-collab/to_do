@@ -23,7 +23,8 @@ class TaskDetails extends StatefulWidget {
 }
 
 class _TaskDetailsState extends State<TaskDetails> {
- late TaskModel _lastKnown = widget.task;
+  // آخر نسخة معروفة من التاسك (بتفضل معروضة وإحنا بنقفل الصفحة بعد الحذف).
+  late TaskModel _lastKnown = widget.task;
   bool _closing = false;
 
   TaskModel? _findTask(List<TaskModel> tasks) {
@@ -38,11 +39,11 @@ class _TaskDetailsState extends State<TaskDetails> {
     return BlocConsumer<TasksCubit, TaskStates>(
       listenWhen: (_, current) => current is SuccessState,
       listener: (context, state) {
-        final found = _findTask((state as SuccessState).tasks);
+        if (state is! SuccessState) return;
+        final found = _findTask(state.tasks);
         if (found != null) {
           _lastKnown = found;
-        } else if (!_closing) {
-         _closing = true;
+        } else if (!_closing) { _closing = true;
           Navigator.pop(context);
         }
       },
@@ -100,14 +101,7 @@ class _TaskDetailsState extends State<TaskDetails> {
               children: [
                 SmallButton(
                   icon: Icons.edit_outlined,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => EditTask(taskModel: task),
-                      ),
-                    );
-                  },
+                  onPressed: () {context.toView(EditTask(taskModel: task));},
                 ),
                 SmallButton(
                   icon: Icons.delete_outline_rounded,

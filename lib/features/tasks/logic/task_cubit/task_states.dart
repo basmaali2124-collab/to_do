@@ -1,6 +1,5 @@
 import 'package:to_do_app/core/task_model.dart';
-
-abstract class TaskStates {}
+sealed class TaskStates {}
 
 class InitialState extends TaskStates {}
 
@@ -24,6 +23,5 @@ class SuccessState extends TaskStates {
   int get completedCount =>
       tasks.where((t) => t.status == Status.completed).length;
 
- 
   double get percent => total == 0 ? 0.0 : completedCount / total;
 }

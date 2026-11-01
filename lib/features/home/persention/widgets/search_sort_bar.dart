@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:to_do_app/core/app_colors.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:to_do_app/features/home/logic/home_cubit/home_states.dart';
 
 class SearchSortBar extends StatefulWidget {
   final HomeState homeState;
-  final HomeCubit homeCubit;
 
-  const SearchSortBar({
-    super.key,
-    required this.homeState,
-    required this.homeCubit,
-  });
+  const SearchSortBar({super.key, required this.homeState});
 
   @override
   State<SearchSortBar> createState() => _SearchSortBarState();
@@ -36,14 +32,13 @@ class _SearchSortBarState extends State<SearchSortBar> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final homeState = widget.homeState;
-    final homeCubit = widget.homeCubit;
 
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _controller,
-            onChanged: homeCubit.changeSearch,
+            onChanged: (value) => context.read<HomeCubit>().changeSearch(value),
             decoration: InputDecoration(
               hintText: 'Search tasks',
               prefixIcon: const Icon(Icons.search_rounded),
@@ -52,7 +47,7 @@ class _SearchSortBarState extends State<SearchSortBar> {
                       icon: const Icon(Icons.close_rounded),
                       onPressed: () {
                         _controller.clear();
-                        homeCubit.clearSearch();
+                        context.read<HomeCubit>().clearSearch();
                       },
                     )
                   : null,
@@ -61,7 +56,7 @@ class _SearchSortBarState extends State<SearchSortBar> {
         ),
         const SizedBox(width: 10),
         ElevatedButton(
-          onPressed: homeCubit.toggleSortByPriority,
+          onPressed: () => context.read<HomeCubit>().toggleSortByPriority(),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(0, 48),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
